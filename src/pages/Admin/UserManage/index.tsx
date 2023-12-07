@@ -1,131 +1,203 @@
-import Footer from '@/components/Footer';
-import { JUMP_LINK, SYSTEM_LOGO } from '@/constants';
-import { register } from '@/services/ant-design-pro/api';
-import {
-  LockOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import {
-  LoginForm,
-  ProFormText
-} from '@ant-design/pro-components';
-import { Tabs, message } from 'antd';
-import React, { useState } from 'react';
-import { history } from 'umi';
-import styles from './index.less';
+import { PlusOutlined } from '@ant-design/icons';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { ProTable, TableDropdown } from '@ant-design/pro-components';
+import { Button, Space, Tag } from 'antd';
+import { useRef } from 'react';
+import request from 'umi-request';
+import CurrentUser = API.CurrentUser
 
-const Register: React.FC = () => {
+export const waitTimePromise = async (time: number = 100) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, time);
+  });
+};
 
-  const [type, setType] = useState<string>('account');
+export const waitTime = async (time: number = 100) => {
+  await waitTimePromise(time);
+};
 
-  //表单提交
-  const handleSubmit = async (values: API.RegisterParams) => {
-    //校验
-    const { userPassword, checkPassword } = values;
-    if (userPassword !== checkPassword) {
-      message.error('两次输入的密码不一致');
-      return;
-    }
 
-    try {
-      // 注册
-      const id = await register(values);
-      if (id > 0) {
-        const defaultLoginSuccessMessage = '注册成功！';
-        message.success(defaultLoginSuccessMessage);
-        // await fetchUserInfo();
-        /** 此方法会跳转到 redirect 参数所在的位置 */
-        if (!history) return;
-        const { query } = history.location;
-        history.push({
-          pathname: '/user/login',
-          query,
-        });
-        return;
-      } else {
-        throw new Error('register error id = ${id}');
-      }
-    } catch (error) {
-      const defaultLoginFailureMessage = '注册失败，请重试！';
-      message.error(defaultLoginFailureMessage);
-    }
-  };
 
+const columns: ProColumns<CurrentUser>[] = [
+  {
+    dataIndex: 'id',
+    valueType: 'indexBorder',
+    width: 48,
+  },
+  {
+    title: '用户名',
+    dataIndex: 'username',
+    copyable: true,
+  },
+  {
+    title: '用户账户',
+    dataIndex: 'userAccount',
+    copyable: true,
+  },
+  {
+    title: '头像',
+    dataIndex: 'avatarUrl',
+    copyable: true,
+  },
+  {
+    title: '性别',
+    dataIndex: 'gender',
+    copyable: true,
+  },
+  {
+    title: '电话',
+    dataIndex: 'phone',
+    copyable: true,
+  },
+  {
+    title: '邮件',
+    dataIndex: 'email',
+    copyable: true,
+  },
+  {
+    title: '用户状态',
+    dataIndex: 'userStatus',
+    copyable: true,
+  },
+  {
+    title: '角色',
+    dataIndex: 'userRole',
+    copyable: true,
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createTime',
+    valueType: 'dateTime',
+    copyable: true,
+  },
+  // {
+  //   disable: true,
+  //   title: '状态',
+  //   dataIndex: 'state',
+  //   filters: true,
+  //   onFilter: true,
+  //   ellipsis: true,
+  //   valueType: 'select',
+  //   valueEnum: {
+  //     all: { text: '超长'.repeat(50) },
+  //     open: {
+  //       text: '未解决',
+  //       status: 'Error',
+  //     },
+  //     closed: {
+  //       text: '已解决',
+  //       status: 'Success',
+  //       disabled: true,
+  //     },
+  //     processing: {
+  //       text: '解决中',
+  //       status: 'Processing',
+  //     },
+  //   },
+  // },
+  // {
+  //   disable: true,
+  //   title: '标签',
+  //   dataIndex: 'labels',
+  //   search: false,
+  //   renderFormItem: (_, { defaultRender }) => {
+  //     return defaultRender(_);
+  //   },
+  //   render: (_, record) => (
+  //     <Space>
+  //       {record.labels.map(({ name, color }) => (
+  //         <Tag color={color} key={name}>
+  //           {name}
+  //         </Tag>
+  //       ))}
+  //     </Space>
+  //   ),
+  // },
+
+  {
+    title: '操作',
+    valueType: 'option',
+    key: 'option',
+    render: (text, record, _, action) => [
+      <a
+        key="editable"
+        onClick={() => {
+          action?.startEditable?.(record.id);
+        }}
+      >
+        编辑
+      </a>,
+      <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
+        查看
+      </a>,
+      <TableDropdown
+        key="actionGroup"
+        onSelect={() => action?.reload()}
+        menus={[
+          { key: 'copy', name: '复制' },
+          { key: 'delete', name: '删除' },
+        ]}
+      />,
+    ],
+  },
+];
+
+export default () => {
+  const actionRef = useRef<CurrentUser>();
   return (
-    <div className={styles.container}>
-      <div className={styles.content}>
-        <LoginForm
-          logo={<img alt="logo" src={SYSTEM_LOGO} />}
-          title="五厨中心"
-          submitter={{
-            searchConfig: {
-              submitText: '注册'
-            }
-          }}
-          subTitle={<a href={JUMP_LINK} target='_blank' rel='noreferrer'>五条悟的一天</a>}
-          initialValues={{
-            autoLogin: true,
-          }}
+    <ProTable<GithubIssueItem>
+      columns={columns}
+      actionRef={actionRef}
+      cardBordered
+      request={async (params, sort, filter) => {
+        console.log(sort, filter);
+        await waitTime(2000);
+        return request<{    //返回后台数据
+          data: GithubIssueItem[];
+        }>('https://proapi.azurewebsites.net/github/issues', {
+          params,
+        });
+      }}
+      editable={{
+        type: 'multiple',
+      }}
+      columnsState={{
+        persistenceKey: 'pro-table-singe-demos',
+        persistenceType: 'localStorage',
+        onChange(value) {
+          console.log('value: ', value);
+        },
+      }}
+      rowKey="id"
+      search={{
+        labelWidth: 'auto',
+      }}
+      options={{
+        setting: {
+          listsHeight: 400,
+        },
+      }}
+      form={{
+        // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
+        syncToUrl: (values, type) => {
+          if (type === 'get') {
+            return {
+              ...values,
+              created_at: [values.startTime, values.endTime],
+            };
+          }
+          return values;
+        },
+      }}
+      pagination={{
+        pageSize: 5,
+        onChange: (page) => console.log(page),
+      }}
+      dateFormatter="string"
+      headerTitle="高级表格"
 
-          onFinish={async (values) => {
-            await handleSubmit(values as API.RegisterParams);
-          }}
-        >
-          <Tabs activeKey={type} onChange={setType}>
-            <Tabs.TabPane key="account" tab={'账号密码注册'} />
-          </Tabs>
-
-          {type === 'account' && (
-            <>
-              <ProFormText
-                name="userAccount"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <UserOutlined className={styles.prefixIcon} />,
-                }}
-                placeholder={'请输入暗号（账号）'}
-                rules={[
-                  {
-                    required: true,
-                    message: '账号是必填项！',
-                  },
-                ]}
-              />
-              <ProFormText.Password
-                name="userPassword"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <LockOutlined className={styles.prefixIcon} />,
-                }}
-                placeholder={'请输入复活密码'}
-                rules={[
-                  {
-                    required: true,
-                    message: '密码是必填项！',
-                  },
-                ]}
-              />
-              <ProFormText.Password
-                name="checkPassword"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <LockOutlined className={styles.prefixIcon} />,
-                }}
-                placeholder={'请再次输入复活密码'}
-                rules={[
-                  {
-                    required: true,
-                    message: '密码是必填项！',
-                  },
-                ]}
-              />
-            </>
-          )}
-
-        </LoginForm>
-      </div>
-      <Footer />
-    </div>
+    />
   );
 };
-export default Register;
