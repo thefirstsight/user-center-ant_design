@@ -50,7 +50,7 @@ export async function getInitialState(): Promise<{
       //@ts-ignore
       fetchUserInfo,
       settings: defaultSettings,
-
+ 
     };
   }
   const currentUser = await fetchUserInfo();

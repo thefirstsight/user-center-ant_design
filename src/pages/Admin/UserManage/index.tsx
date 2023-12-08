@@ -1,10 +1,9 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { searchUser } from '@/services/ant-design-pro/api';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
-import { Button, Space, Tag } from 'antd';
+import { Image } from 'antd';
 import { useRef } from 'react';
-import request from 'umi-request';
-import CurrentUser = API.CurrentUser
+// import CurrentUser = API.CurrentUser
 
 export const waitTimePromise = async (time: number = 100) => {
   return new Promise((resolve) => {
@@ -20,7 +19,7 @@ export const waitTime = async (time: number = 100) => {
 
 
 
-const columns: ProColumns<CurrentUser>[] = [
+const columns: ProColumns<API.CurrentUser>[] = [
   {
     dataIndex: 'id',
     valueType: 'indexBorder',
@@ -39,6 +38,11 @@ const columns: ProColumns<CurrentUser>[] = [
   {
     title: '头像',
     dataIndex: 'avatarUrl',
+    render: (_, record) => (
+     <div>
+      <Image src={record.avatarUrl}  width={100}/>
+     </div>
+    ),
     copyable: true,
   },
   {
@@ -145,20 +149,18 @@ const columns: ProColumns<CurrentUser>[] = [
 ];
 
 export default () => {
-  const actionRef = useRef<CurrentUser>();
+  const actionRef = useRef<ActionType>();
   return (
-    <ProTable<GithubIssueItem>
+    <ProTable<API.CurrentUser>
       columns={columns}
       actionRef={actionRef}
       cardBordered
       request={async (params, sort, filter) => {
         console.log(sort, filter);
-        await waitTime(2000);
-        return request<{    //返回后台数据
-          data: GithubIssueItem[];
-        }>('https://proapi.azurewebsites.net/github/issues', {
-          params,
-        });
+        const userList = await searchUser();
+        return {
+          data: userList
+        }
       }}
       editable={{
         type: 'multiple',
