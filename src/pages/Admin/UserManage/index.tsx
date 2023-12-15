@@ -39,9 +39,9 @@ const columns: ProColumns<API.CurrentUser>[] = [
     title: '头像',
     dataIndex: 'avatarUrl',
     render: (_, record) => (
-     <div>
-      <Image src={record.avatarUrl}  width={100}/>
-     </div>
+      <div>
+        <Image src={record.avatarUrl} width={100} />
+      </div>
     ),
     copyable: true,
   },
@@ -66,9 +66,22 @@ const columns: ProColumns<API.CurrentUser>[] = [
     copyable: true,
   },
   {
+    title: '星球编号',
+    dataIndex: 'planetCode',
+    copyable: true,
+  },
+  {
     title: '角色',
     dataIndex: 'userRole',
     copyable: true,
+    valueType: 'select',      //可枚举的值用select
+    valueEnum: {
+      0: { text: '普通用户', status: 'Default' },
+      1: {
+        text: '管理员',
+        status: 'Success',
+      },
+    }
   },
   {
     title: '创建时间',
