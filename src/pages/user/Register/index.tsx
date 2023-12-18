@@ -30,7 +30,9 @@ const Register: React.FC = () => {
     try {
       // 注册
       const id = await register(values);
-      if (id > 0) {
+
+      //todo 在某个地方集中处理data
+      if (id) {
         const defaultLoginSuccessMessage = '注册成功！';
         message.success(defaultLoginSuccessMessage);
         // await fetchUserInfo();
@@ -42,10 +44,8 @@ const Register: React.FC = () => {
           query,
         });
         return;
-      } else {
-        throw new Error('register error id = ${id}');
-      }
-    } catch (error) {
+      } 
+    } catch (error: any) {
       const defaultLoginFailureMessage = '注册失败，请重试！';
       message.error(defaultLoginFailureMessage);
     }

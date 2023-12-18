@@ -1,6 +1,8 @@
 // @ts-ignore
 /* eslint-disable */
 
+
+
 declare namespace API {
   type CurrentUser = {
     id: number;
@@ -43,6 +45,16 @@ declare namespace API {
     createdAt?: string;
     progress?: number;
   };
+
+  /**
+   * 对接后端的通用返回类
+   */
+  type BaseResponse<T> = {
+    code: number,
+    data: T,
+    message: string,
+    description: string,
+  }
 
   type RuleList = {
     data?: RuleListItem[];
